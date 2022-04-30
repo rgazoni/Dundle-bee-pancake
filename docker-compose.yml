@@ -1,0 +1,58 @@
+#https://stackoverflow.com/questions/38504257/mysql-scripts-in-docker-entrypoint-initdb-are-not-executed
+#https://stackoverflow.com/questions/48105051/docker-how-to-take-a-look-at-the-tables-inside-mysql-volume
+
+version: "3.9"  # optional since v1.27.0
+
+services:
+    rabbitmq:
+        container_name: "rabbitmq"
+        image: rabbitmq:3-management
+        volumes:
+            - /home/admin/rabbit/
+        ports:
+            # AMQP protocol port
+            - '5672:5672'
+            # HTTP management UI
+            - '15672:15672'
+        networks:
+          messageryRoute:
+            ipv4_address: 172.40.1.13
+
+    python:
+        container_name: "pytest"
+        build: ./agents
+        restart: always
+        volumes:
+            - .:/home
+        working_dir: "/home"
+        networks:
+            messageryRoute:
+              ipv4_address: 172.40.1.12
+        tty: true
+
+    db_redes:
+        container_name: "db_redes"
+        image: mariadb
+        restart: always
+        environment:
+          MARIADB_ROOT_PASSWORD: 'root'
+        ports:
+          - "3306:3306"
+        volumes:
+          - ./mysqldb/dbdata:/var/lib/mysql
+          - ./mysqldb/start-scripts:/docker-entrypoint-initdb.d
+        networks:
+          messageryRoute:
+            ipv4_address: 172.40.1.15
+
+networks: 
+  messageryRoute:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.40.1.0/24"
+          gateway: "172.40.1.11"
+
+volumes:
+  mysqldb:
