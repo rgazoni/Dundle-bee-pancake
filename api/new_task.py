@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import pika
-import sys
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host='172.40.1.13'))
@@ -8,7 +7,7 @@ channel = connection.channel()
 
 channel.queue_declare(queue='task_queue', durable=True)
 
-message = ' '.join(sys.argv[1:]) or "Hello World!"
+message = '{"name": "Jane Doe", "date": "20/01/2022", "qtd": "99"}'
 channel.basic_publish(
     exchange='',
     routing_key='task_queue',
