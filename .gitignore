@@ -1,2 +1,6 @@
 mysqldb/dbdata/*
+<<<<<<< HEAD
 rabbitmq/__pycache__
+=======
+docker-compose.yml
+>>>>>>> 0b54c74 (Added docker-compose to gitignore)
