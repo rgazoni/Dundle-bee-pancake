@@ -19,16 +19,30 @@ services:
           messageryRoute:
             ipv4_address: 172.40.1.13
 
-    agents:
-        container_name: "pytest"
-        build: ./agents
+    api:
+        container_name: "api"
+        build: ./
         restart: always
         volumes:
-            - .:/home
+            - ./api:/home
+            - ./rabbitmq:/home/rabbitmq
         working_dir: "/home"
         networks:
             messageryRoute:
               ipv4_address: 172.40.1.12
+        tty: true
+
+    agents:
+        container_name: "agents"
+        build: ./
+        restart: always
+        volumes:
+            - ./agents:/home
+            - ./rabbitmq:/home/rabbitmq
+        working_dir: "/home"
+        networks:
+            messageryRoute:
+              ipv4_address: 172.40.1.22
         tty: true
 
     mariadb:

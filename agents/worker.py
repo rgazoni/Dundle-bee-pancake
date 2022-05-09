@@ -1,23 +1,14 @@
 #!/usr/bin/env python3
-import pika
-import time
+from rabbitmq import subscriber
 
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host='172.40.1.13'))
-channel = connection.channel()
-
-channel.queue_declare(queue='task_queue', durable=True)
-print(' [*] Waiting for messages. To exit press CTRL+C')
+config = {
+    'host': '172.40.1.13',
+    'port': '5672',
+    'exchange': 'main.exch',
+}
 
 
-def callback(ch, method, properties, body):
-    print(" [x] Received %r" % body.decode())
-    time.sleep(body.count(b'.'))
-    print(" [x] Done")
-    ch.basic_ack(delivery_tag=method.delivery_tag)
+sub = subscriber.Subscriber(config, 'oi')
 
-
-channel.basic_qos(prefetch_count=1)
-channel.basic_consume(queue='task_queue', on_message_callback=callback)
-
-channel.start_consuming()
+sub.consume_from_queue('stock')
+sub.consume_from_queue('stock.shelves')
