@@ -32,7 +32,7 @@ class Subscriber(rabbit.RabbitSetup):
         #    print(e)
 
     def consume_from_queue(self, queueName):
-
+        
         #se nao tiver a queue?
 
         self.channel.basic_consume(queue=queueName,

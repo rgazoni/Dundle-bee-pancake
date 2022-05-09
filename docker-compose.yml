@@ -21,12 +21,14 @@ services:
 
     api:
         container_name: "api"
-        build: ./
+        build: ./api
         restart: always
         volumes:
             - ./api:/home
             - ./rabbitmq:/home/rabbitmq
         working_dir: "/home"
+        ports:
+          - "5000:5000"
         networks:
             messageryRoute:
               ipv4_address: 172.40.1.12

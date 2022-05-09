@@ -13,9 +13,8 @@ config = {
 
 publ = publisher.Publisher(config)
 
-message1 ={
-    "routing_key": "stock.r",
-    "message": "Ola mensagem"
+message1 = {
+    "message": "Ola mensasagem"
 }
 
 message2 ={
