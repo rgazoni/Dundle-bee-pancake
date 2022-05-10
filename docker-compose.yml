@@ -80,7 +80,7 @@ services:
         environment:
           MARIADB_ROOT_PASSWORD: 'root'
         ports:
-          - "3306:3306"
+          - "3305:3306"
         volumes:
           - ./mysqldb/dbdata:/var/lib/mysql
           - ./mysqldb/start-scripts:/docker-entrypoint-initdb.d

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Module Imports
+import mariadb
+import sys
 from rabbitmq import subscriber
 
 config = {
@@ -7,54 +10,67 @@ config = {
     'exchange': 'main.exch',
 }
 
+# sub = subscriber.Subscriber(config, )
+# print("stock")
+# sub.consume_from_queue('stock')
 
-sub = subscriber.Subscriber(config, 'oi')
-print("STOCK")
-sub.consume_from_queue('stock')
+class Stock(Subscriber):
+    # def on_message_callback(self, channel, method, properties, body):
+    #     binding_key = method.routing_key
+    #     print("\n")
+    #     print("received new message for -" + binding_key)
+    #     print("\n")
+    #     print(" [x] Received %r" % body)
+    #     print("\n")
+    #     print(" [x] Received %r" % properties)
+    #     print("\n")
+    #     print(" [x] Received %r" % channel)
+    #     print("Opa Ramon Bom?")
+    def on_message_callback(self, channel, method, properties, body):
+        connexion = connect()
+        #if query_stock:
+        query_result = query_stock(connexion)
+        #if sell:
+        isOk = add_stock(connexion,  body.ID_PROD, body.ID_CATEGORIA, body.quant, body.fabrication, body.expiration, body.lot, body.origin)
+        
+if __name__ = "__main__":
+    s = Stock(config)
+    s.consume_from_queue('stock')
 
-# Module Imports
-import mariadb
-import sys
+def connect():
+    try:
+        connexion = mariadb.connect(
+            user="root",
+            password="root",
+            host="127.0.0.1",
+            port=3307,
+            database="Storage"
+        )
+        return connexion
+    except mariadb.Error as e:
+        print(f"Error connecting to MariaDB Platform: {e}")
+        sys.exit(1)
 
-# Connect to MariaDB Platform
-try:
-    connexion = mariadb.connect(
-        user="root",
-        password="root",
-        host="127.0.0.1",
-        port=3307,
-        database="Storage"
+def query_stock(connexion):
+    cursor = connexion.cursor()
+    command = f'SELECT ID_PROD, ID_CATEGORIA, Nome, Quantidade, lote, origem, Data_fabricacao, Data_vencimento  ' \
+            f'FROM produto ' \
+            f'INNER JOIN categorias ' \
+            f'ON fk_Categorias_ID_CATEGORIA = ID_CATEGORIA'
+    cursor.execute(command)
+    query_result = cursor.fetchall()  # Retorna a lista de produtos nas gondulas
+    cursor.close()
+    connexion.close()
+    return query_result
 
-    )
-except mariadb.Error as e:
-    print(f"Error connecting to MariaDB Platform: {e}")
-    sys.exit(1)
-
-# Get Cursor
-cursor = connexion.cursor()
-
-command = f'SELECT ID_PROD, ID_CATEGORIA, Nome, Quantidade, lote, origem, Data_fabricacao, Data_vencimento  ' \
-          f'FROM produto ' \
-          f'INNER JOIN categorias ' \
-          f'ON fk_Categorias_ID_CATEGORIA = ID_CATEGORIA'
-cursor.execute(command)
-query_result = cursor.fetchall() # Retorna a lista de produtos geral
-print(query_result)
-
-# Aqui você passa os argumentos para a procedure a ordem seria
-# ID_PROD, ID_CATEGORIA, Quantidade, Data_fabricacao,
-# Data_vencimento, lote, origem , result -> Deixar 0 por padrão
-args = [1, 1, 1, "2001-01-22", "2010-10-23", 17, "Nestlé Campinas", 0]
-result_args = cursor.callproc('recebe_produto', args)
-result = cursor.fetchall()
-
-print(result[0][0])
-
-cursor.close()
-cursor = connexion.cursor()
-
-connexion.commit()
-
-
-cursor.close()
-connexion.close()
+def add_stock(connexion,  ID_PROD, ID_CATEGORIA, quant, fabrication, expiration, lot, origin)
+    cursor = connexion.cursor()
+    args = [ID_PROD, ID_CATEGORIA, quant, fabrication, expiration, lot, origin, 0]
+    cursor.callproc('recebe_produto', args)
+    result = cursor.fetchall()
+    cursor.close()
+    cursor = connexion.cursor()
+    connexion.commit()
+    cursor.close()
+    connexion.close()
+    return result[0][0]
