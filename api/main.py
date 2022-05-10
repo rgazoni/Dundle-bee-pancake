@@ -117,12 +117,28 @@ class check_item(Resource):
         return #item_name, 204
 
 
+#Get the items from shelf
+class get_shelf(Resource):
+    def get(self):
+        #add request_type into args JSON
+        get_info = {
+            "request_type": 201
+        }
+        
+        publ.publish_message('stock.r', json.dumps(get_info))
+
+        #itensFromShelf = 
+
+        return #itensFromShelf, 204
+
+
 # --------- ROUTES ---------
 api.add_resource(insert_int_stk, "/insert_int_stock")
 api.add_resource(get_int_stock, "/int_stock")
 api.add_resource(insert_shelf, "/insert_shelf")
 api.add_resource(remove_shelf, "/remove_shelf")
 api.add_resource(check_item, "/check_item")
+api.add_resource(get_shelf, "/shelf")
 
 # ------------------------
 
