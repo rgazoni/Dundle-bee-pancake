@@ -34,17 +34,43 @@ services:
               ipv4_address: 172.40.1.12
         tty: true
 
-    agents:
-        container_name: "agents"
-        build: ./
+    stock:
+        container_name: "stock-agent"
+        build: ./agents/stock
         restart: always
         volumes:
-            - ./agents:/home
+            - ./agents/stock:/home
             - ./rabbitmq:/home/rabbitmq
         working_dir: "/home"
         networks:
             messageryRoute:
-              ipv4_address: 172.40.1.22
+              ipv4_address: 172.40.1.30
+        tty: true
+
+    stock-shelves:
+        container_name: "stock-shelves-agent"
+        build: ./agents/stock-shelves
+        restart: always
+        volumes:
+            - ./agents/stock-shelves:/home
+            - ./rabbitmq:/home/rabbitmq
+        working_dir: "/home"
+        networks:
+            messageryRoute:
+              ipv4_address: 172.40.1.31
+        tty: true
+
+    shelves:
+        container_name: "shelves-agent"
+        build: ./agents/shelves
+        restart: always
+        volumes:
+            - ./agents/shelves:/home
+            - ./rabbitmq:/home/rabbitmq
+        working_dir: "/home"
+        networks:
+            messageryRoute:
+              ipv4_address: 172.40.1.32
         tty: true
 
     mariadb:

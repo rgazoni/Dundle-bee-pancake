@@ -1,3 +1,6 @@
+#https://github.com/pika/pika/blob/0.12.0/examples/basic_consumer_threaded.py
+#https://www.rabbitmq.com/heartbeats.html#:~:text=The%20heartbeat%20timeout%20value%20defines,be%20configured%20to%20request%20heartbeats.
+
 #!/usr/bin/env python3
 import pika
 
@@ -17,7 +20,8 @@ class RabbitSetup:
 
     def _create_connection(self):
         parameters=pika.ConnectionParameters(host=self.config['host'],
-                                             port=self.config['port'])
+                                             port=self.config['port'],
+                                             heartbeat=0)
         return pika.BlockingConnection(parameters)
 
     def _setup(self):
@@ -43,5 +47,3 @@ class RabbitSetup:
                 self.channel.queue_bind(exchange=self.config['exchange'],
                            queue=queue_name,
                            routing_key=routing_key)
-
-        self.channel.basic_qos(prefetch_count=1)
