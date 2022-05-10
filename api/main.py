@@ -5,6 +5,7 @@ from flask_restful import Api, Resource, reqparse
 from rabbitmq import publisher
 import json
 
+#Settings to make connection with RabbitMQ
 config = {
     'host': '172.40.1.13',
     'port': '5672',
@@ -45,8 +46,8 @@ remove_shelf_args = reqparse.RequestParser()
 remove_shelf_args.add_argument("prod_id", type=int, help="Product ID is necessary", required=True)
 remove_shelf_args.add_argument("prod_qnt", type=int, help="Product quantity is necessary", required=True)
 
-check_item_args = reqparse.RequestParser()
-check_item_args.add_argument("prod_id", type=int, help="Product ID is necessary", required=True)
+get_item_name_args = reqparse.RequestParser()
+get_item_name_args.add_argument("prod_id", type=int, help="Product ID is necessary", required=True)
 
 # ------------------------
 
@@ -93,7 +94,7 @@ class insert_shelf(Resource):
 class remove_shelf(Resource):
     def delete(self):
         #array of products_id and qnt
-        args = insert_int_stk_args.parse_args()
+        args = remove_shelf_args.parse_args()
 
         #sendind payload to rabbitMQ
         publ.publish_message('shelves.r', json.dumps(args))
@@ -101,10 +102,10 @@ class remove_shelf(Resource):
         return '', 204
 
 #Get the items name
-class check_item(Resource):
+class get_item_name(Resource):
     def post(self):
         #getting the args
-        args = check_item_args.parse_args()
+        args = get_item_name_args.parse_args()
 
         #add request_type into args JSON
 
@@ -137,7 +138,7 @@ api.add_resource(insert_int_stk, "/insert_int_stock")
 api.add_resource(get_int_stock, "/int_stock")
 api.add_resource(insert_shelf, "/insert_shelf")
 api.add_resource(remove_shelf, "/remove_shelf")
-api.add_resource(check_item, "/check_item")
+api.add_resource(get_item_name, "/item_name")
 api.add_resource(get_shelf, "/shelf")
 
 # ------------------------
