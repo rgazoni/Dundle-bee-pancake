@@ -14,7 +14,8 @@ class RabbitSetup:
             'stock' : ['stock.r'],
             'stock.shelves' : ['stock.shelves.r'],
             'shelves': ['shelves.r'],
-            'logstash': ['shelves.r', 'stock.shelves.r', 'stock.r']
+            'logstash': ['shelves.r', 'stock.shelves.r', 'stock.r'],
+            'teste': ['teste.r']
         }
         self._setup()
 

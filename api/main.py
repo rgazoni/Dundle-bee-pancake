@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-import resource
+from multiprocessing import connection
 from flask import Flask
 from flask_restful import Api, Resource, reqparse
 from rabbitmq import publisher
 import json
+import threading
+from rabbitmq import subscriber
 
 #Settings to make connection with RabbitMQ
 config = {
@@ -15,6 +17,10 @@ config = {
 app = Flask(__name__)
 api = Api(app)
 publ = publisher.Publisher(config)
+
+class rabbitApi(subscriber.Subscriber):
+    def _on_message_callback(self, channel, method, properties, body):
+        return json.loads(body)
 
 # --------- ARGS ---------
 # EXAMPLE:
@@ -54,17 +60,27 @@ get_item_name_args.add_argument("prod_id", type=int, help="Product ID is necessa
 #Insert item to the internal stock
 class insert_int_stk(Resource):
     def post(self):
+        
+
         #getting the args
         args = insert_int_stk_args.parse_args()
 
         #sendind payload to rabbitMQ
         publ.publish_message('stock.r', json.dumps(args))
 
-        return {"Product": args}
+        s = rabbitApi(config)
+        l = s.consume_from_queue('teste')
+
+        return {"Product": l}
+
 
 
 #Get all the items from the internal stock
 class get_int_stock(Resource):
+
+    def newThread():
+        return "teste"
+
     def get(self):
         #sendind a request to rabbitMQ
        
@@ -74,6 +90,8 @@ class get_int_stock(Resource):
 
         #sendind payload to rabbitMQ
         publ.publish_message('stock.r', json.dumps(get_info))
+
+        newThread = threading.Thread(target= self.newThread, args=())
 
         #list = 
 

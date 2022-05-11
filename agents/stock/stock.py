@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+import json
 from rabbitmq import subscriber
+from rabbitmq import publisher
 
 config = {
     'host': '172.40.1.13',
@@ -7,7 +9,16 @@ config = {
     'exchange': 'main.exch',
 }
 
+class rabbitApi(subscriber.Subscriber):
+    def _on_message_callback(self, channel, method, properties, body):
+        return json.loads(body)
 
-sub = subscriber.Subscriber(config, 'oi')
+
+sub = rabbitApi(config)
 print("STOCK")
-sub.consume_from_queue('stock')
+l = sub.consume_from_queue('stock')
+print(l)
+
+
+p = publisher.Publisher(config)
+p.publish_message('teste.r', json.dumps('ok'))
