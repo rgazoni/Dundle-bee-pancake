@@ -2,7 +2,7 @@
 import resource
 from flask import Flask
 from flask_restful import Api, Resource, reqparse
-from rabbitmq import publisher
+from rabbitmq import Publisher
 import json
 
 #Settings to make connection with RabbitMQ
@@ -14,7 +14,7 @@ config = {
 
 app = Flask(__name__)
 api = Api(app)
-publ = publisher.Publisher(config)
+publ = Publisher.Publisher(config)
 
 # --------- ARGS ---------
 # EXAMPLE:
@@ -57,11 +57,15 @@ class insert_int_stk(Resource):
         #getting the args
         args = insert_int_stk_args.parse_args()
 
+        args = dict(args)
+        #Kira change the request_type, do a glossary ASAP. 
+        #Just change the number
+        args['request_type'] = 100
+
         #sendind payload to rabbitMQ
-        publ.publish_message('stock.r', json.dumps(args))
+        publ.publish_message('stock', json.dumps(args))
 
-        return {"Product": args}
-
+        return {"Products": args}
 
 #Get all the items from the internal stock
 class get_int_stock(Resource):
@@ -73,12 +77,11 @@ class get_int_stock(Resource):
         }
 
         #sendind payload to rabbitMQ
-        publ.publish_message('stock.r', json.dumps(get_info))
+        fnt_message = publ.publish_message_response(routingKey='stock',
+                                        queueName='stock',
+                                        message=json.dumps(get_info))
 
-        #list = 
-
-        return {"Products": list}
-
+        return {"Product": json.loads(fnt_message)}
 
 #Take items from the internal stock and send to the shelf
 class insert_shelf(Resource):
@@ -86,7 +89,12 @@ class insert_shelf(Resource):
         #array of products_id and qnt
         args = insert_shelf_args.parse_args()
 
-        publ.publish_message('stock.shelves.r', json.dumps(args))
+        args = dict(args)
+        #Kira change the request_type, do a glossary ASAP. 
+        #Just change the number
+        args['request_type'] = 200
+
+        publ.publish_message('stock.shelves', json.dumps(args))
 
         return '', 204
 
@@ -96,8 +104,13 @@ class remove_shelf(Resource):
         #array of products_id and qnt
         args = remove_shelf_args.parse_args()
 
+        args = dict(args)
+        #Kira change the request_type, do a glossary ASAP. 
+        #Just change the number
+        args['request_type'] = 201
+
         #sendind payload to rabbitMQ
-        publ.publish_message('shelves.r', json.dumps(args))
+        publ.publish_message('shelves', json.dumps(args))
 
         return '', 204
 
@@ -107,15 +120,18 @@ class get_item_name(Resource):
         #getting the args
         args = get_item_name_args.parse_args()
 
-        #add request_type into args JSON
+        args = dict(args)
+        #Kira change the request_type, do a glossary ASAP. 
+        #Just change the number
+        args['request_type'] = 202
 
-        #sendind payload to rabbitMQ to get the product name
-        publ.publish_message('stock.r', json.dumps(args))
-
-        #item_name = 
+        #sendind payload to rabbitMQ
+        item_name = publ.publish_message_response(routingKey='shelves',
+                                        queueName='shelves',
+                                        message=json.dumps(args))
 
         #return the item_name
-        return #item_name, 204
+        return item_name, 204
 
 
 #Get the items from shelf

@@ -9,12 +9,12 @@ class RabbitSetup:
     def __init__(self, config):
         self.config = config
         self.connection = self._create_connection()
-        self.channel = None
+        self.channel = self.connection.channel()
         self.queuesAndRoutingKeys = {
-            'stock' : ['stock.r'],
-            'stock.shelves' : ['stock.shelves.r'],
-            'shelves': ['shelves.r'],
-            'logstash': ['shelves.r', 'stock.shelves.r', 'stock.r']
+            'stock' : ['stock'],
+            'stock.shelves' : ['stock.shelves'],
+            'shelves': ['shelves'],
+            'logstash': ['shelves', 'stock.shelves', 'stock']
         }
         self._setup()
 
@@ -26,11 +26,6 @@ class RabbitSetup:
 
     def _setup(self):
     
-        connection = self.connection
-
-        self.channel = connection.channel()
-
-
         #Declaring an exchange routing agent
         self.channel.exchange_declare(exchange=self.config['exchange'],
                                  exchange_type='direct')
@@ -44,6 +39,7 @@ class RabbitSetup:
             queue_name = result.method.queue
 
             for routing_key in self.queuesAndRoutingKeys[queue]:
+                #Basic
                 self.channel.queue_bind(exchange=self.config['exchange'],
                            queue=queue_name,
                            routing_key=routing_key)
