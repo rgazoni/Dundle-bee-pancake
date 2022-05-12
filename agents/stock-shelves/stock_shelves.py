@@ -16,6 +16,7 @@ class Agent(Subscriber.Subscriber):
         # Do your code in here
         # '''
 
+
         # Put your message inside this variable to send to the sender
         self.response = {'number example': 101,
                          'text': 'text example'}
@@ -26,4 +27,4 @@ class Agent(Subscriber.Subscriber):
 
 sub = Agent(config)
 
-sub.consume_from_queue_response('stock')
+sub.consume_from_queue_response('stock.shelves')

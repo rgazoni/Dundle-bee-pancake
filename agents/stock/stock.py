@@ -16,6 +16,7 @@ class Agent(Subscriber.Subscriber):
         # Do your code in here
         # '''
 
+
         # Put your message inside this variable to send to the sender
         self.response = {'number example': 101,
                          'text': 'text example'}
@@ -23,6 +24,8 @@ class Agent(Subscriber.Subscriber):
 
         return super().on_request(ch, method, props, body)
 
+    def on_message_callback(self, channel, method, properties, body):
+        return body
 
 sub = Agent(config)
 

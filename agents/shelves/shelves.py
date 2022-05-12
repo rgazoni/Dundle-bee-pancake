@@ -26,4 +26,4 @@ class Agent(Subscriber.Subscriber):
 
 sub = Agent(config)
 
-sub.consume_from_queue_response('stock')
+sub.consume_from_queue_response('shelves')

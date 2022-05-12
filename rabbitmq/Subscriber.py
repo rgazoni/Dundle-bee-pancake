@@ -3,7 +3,6 @@
 #https://realpython.com/absolute-vs-relative-python-imports/
 
 #!/usr/bin/env python3
-import json
 from multiprocessing.connection import deliver_challenge
 from rabbitmq import RabbitSetup
 import pika
@@ -32,7 +31,7 @@ class Subscriber(RabbitSetup.RabbitSetup):
 
         self.channel.basic_consume(queue=queueName,
             on_message_callback=self.on_message_callback, auto_ack=True)
-        print("I'm going to start consuming")
+        print("Start consuming")
         try:
             self.channel.start_consuming()
         except KeyboardInterrupt:
