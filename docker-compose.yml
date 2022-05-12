@@ -33,6 +33,8 @@ services:
             messageryRoute:
               ipv4_address: 172.40.1.12
         tty: true
+        depends_on:
+          - rabbitmq
 
     stock:
         container_name: "stock-agent"

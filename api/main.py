@@ -109,6 +109,11 @@ class remove_shelf(Resource):
         #Just change the number
         args['request_type'] = 201
 
+        args = dict(args)
+        #Kira change the request_type, do a glossary ASAP. 
+        #Just change the number
+        args['request_type'] = 201
+
         #sendind payload to rabbitMQ
         publ.publish_message('shelves', json.dumps(args))
 

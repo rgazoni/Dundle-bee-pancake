@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from rabbitmq import subscriber
+import json
+from rabbitmq import Subscriber
 
 config = {
     'host': '172.40.1.13',
@@ -7,7 +8,25 @@ config = {
     'exchange': 'main.exch',
 }
 
+class Agent(Subscriber.Subscriber):
 
-sub = subscriber.Subscriber(config, 'oi')
-print("STOCK")
-sub.consume_from_queue('stock')
+    def on_request(self, ch, method, props, body):
+
+        # '''
+        # Do your code in here
+        # '''
+
+
+        # Put your message inside this variable to send to the sender
+        self.response = {'number example': 101,
+                         'text': 'text example'}
+        self.response = json.dumps(self.response)
+
+        return super().on_request(ch, method, props, body)
+
+    def on_message_callback(self, channel, method, properties, body):
+        return body
+
+sub = Agent(config)
+
+sub.consume_from_queue_response('stock')

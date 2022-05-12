@@ -12,6 +12,10 @@ class Agent(Subscriber.Subscriber):
 
     def on_request(self, ch, method, props, body):
 
+        # '''
+        # Do your code in here
+        # '''
+
         # Put your message inside this variable to send to the sender
         self.response = {'number example': 101,
                          'text': 'text example'}
