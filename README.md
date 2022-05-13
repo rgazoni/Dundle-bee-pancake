@@ -12,7 +12,7 @@ Each product have its respective ID, quantity, due date, fabrication date, lot a
 The database has 3 procedures that are in charge of doing the supermarket transactions wich are:
 - Add product to the storage
 - Move produt from the storage to the shelve
-- Remove product from the shell (Simulating the sale act, we are not considering product prices)
+- Remove product from the shelve (Simulating the sale act, we are not considering product prices)
 
 To do so we used MariaDB an open source relational database base.
 
