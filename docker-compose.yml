@@ -7,9 +7,9 @@ services:
 
     rabbitmq:
         container_name: "rabbitmq"
-        image: rabbitmq:3-management
-        volumes:
-            - /home/admin/rabbit/
+        image: rabbitmq:3.9-management
+        #volumes:
+        #    - /home/admin/rabbit/
         ports:
             # AMQP protocol port
             - '5672:5672'
@@ -48,6 +48,8 @@ services:
             messageryRoute:
               ipv4_address: 172.40.1.30
         tty: true
+        depends_on:
+          - rabbitmq
 
     stock-shelves:
         container_name: "stock-shelves-agent"
@@ -61,6 +63,8 @@ services:
             messageryRoute:
               ipv4_address: 172.40.1.31
         tty: true
+        depends_on:
+          - rabbitmq
 
     shelves:
         container_name: "shelves-agent"
@@ -74,6 +78,8 @@ services:
             messageryRoute:
               ipv4_address: 172.40.1.32
         tty: true
+        depends_on:
+          - rabbitmq
 
     mariadb:
         container_name: "mariadb"

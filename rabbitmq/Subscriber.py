@@ -6,7 +6,6 @@
 from rabbitmq import RabbitSetup
 import pika
 
-
 class Subscriber(RabbitSetup.RabbitSetup):
 
     def __init__(self, config):
@@ -15,26 +14,17 @@ class Subscriber(RabbitSetup.RabbitSetup):
     def __del__(self):
         self.connection.close()
 
-    def on_message_callback(self, channel, method, properties, body):
-        binding_key = method.routing_key
-        print("\n")
-        print("received new message for -" + binding_key)
-        print("\n")
-        print(" [x] Received %r" % body)
-        print("\n")
-        print(" [x] Received %r" % properties)
-        print("\n")
-        print(" [x] Received %r" % channel)
-
-    def consume_from_queue(self, queueName):
-
-        self.channel.basic_consume(queue=queueName,
-            on_message_callback=self.on_message_callback, auto_ack=True)
-        print("Start consuming")
-        try:
-            self.channel.start_consuming()
-        except KeyboardInterrupt:
-            self.channel.stop_consuming()
+    # If you want to see some feedback about the proccess copy this into the
+    # on_request function
+    #     binding_key = method.routing_key
+    #     print("\n")
+    #     print("received new message for -" + binding_key)
+    #     print("\n")
+    #     print(" [x] Received %r" % body)
+    #     print("\n")
+    #     print(" [x] Received %r" % properties)
+    #     print("\n")
+    #     print(" [x] Received %r" % channel)
 
     def on_request(self, ch, method, props, body):
         '''
@@ -44,9 +34,12 @@ class Subscriber(RabbitSetup.RabbitSetup):
         to trigger the mechanism
         '''
 
+        print("\n\n\n"+ props.reply_to)
+
         ch.basic_publish(exchange=self.config['exchange'],
-                         routing_key='stock',
-                         properties=pika.BasicProperties(correlation_id=props.correlation_id),
+                         routing_key=props.reply_to,
+                         properties=pika.BasicProperties(
+                             correlation_id=props.correlation_id),
                          body=self.response)
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
@@ -59,7 +52,7 @@ class Subscriber(RabbitSetup.RabbitSetup):
 
         self.channel.basic_consume(
             queue=qeueName,
-            on_message_callback=self.on_request
+            on_message_callback=self.on_request,
         )
         
         print('Start consuming')

@@ -5,10 +5,13 @@ from rabbitmq import Subscriber
 config = {
     'host': '172.40.1.13',
     'port': '5672',
-    'exchange': 'main.exch',
+    'exchange': 'amq.direct',
 }
 
 class Agent(Subscriber.Subscriber):
+
+    def __init__(self, config):
+        super().__init__(config)
 
     def on_request(self, ch, method, props, body):
 
@@ -16,17 +19,28 @@ class Agent(Subscriber.Subscriber):
         # Do your code in here
         # '''
 
+        binding_key = method.routing_key
+        print("\n")
+        print("received new message for -" + binding_key)
+        print("\n")
+        print(" [x] Received %r" % body)
+        print("\n")
+        print(" [x] Received %r" % props)
+        print("\n")
+        print(" [x] Received %r" % ch)
 
+        # If it is a get condition, send back the list of items. 
+        # And if it is a insert that initially didn't have to send nothing
+        # back, put an ACK down the pipeline 
         # Put your message inside this variable to send to the sender
-        self.response = {'number example': 101,
+        # The variable is self.response
+        self.response = {'number example of stock': 200,
                          'text': 'text example'}
+        # It's interesting to notice that the response is converted to string in order to send
+        # into the Rabbit pipeline 
         self.response = json.dumps(self.response)
 
         return super().on_request(ch, method, props, body)
 
-    def on_message_callback(self, channel, method, properties, body):
-        return body
-
 sub = Agent(config)
-
 sub.consume_from_queue_response('stock')

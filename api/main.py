@@ -9,7 +9,7 @@ import json
 config = {
     'host': '172.40.1.13',
     'port': '5672',
-    'exchange': 'main.exch',
+    'exchange': 'amq.direct',
 }
 
 app = Flask(__name__)
@@ -62,31 +62,46 @@ class insert_int_stk(Resource):
         #Just change the number
         args['request_type'] = 100
 
-        #sendind payload to rabbitMQ
-        publ.publish_message('stock', json.dumps(args))
+        #Sendind payload to rabbitMQ
 
+        #To stock queue - Recieves an ACK 
+        ack = publ.publish_message_response(routingKey='stock',
+                                        message=json.dumps(args))
+
+        args = dict(args)
+        args['ack'] = str(ack)
+        ack = ''
+        #To logstash queue
+        publ.publish_message('logstash', json.dumps(args))
+        
         return {"Products": args}
 
 #Get all the items from the internal stock
-class get_int_stock(Resource):
+class get_int_stock(Resource): 
     def get(self):
-        #sendind a request to rabbitMQ
-       
+        
+        #Sendind a request to stock rabbitMQ queue
         get_info = {
             "request_type": 101
         }
 
-        #sendind payload to rabbitMQ
+        #Sendind payload to rabbitMQ
+
+        #Expecting as a return all items on stock
         fnt_message = publ.publish_message_response(routingKey='stock',
-                                        queueName='stock',
                                         message=json.dumps(get_info))
+
+        #To logstash queue
+        #See with Daniel if is interesting ELK recieves the contents on stock
+        #Anylise if this message is useful at all
+        publ.publish_message('logstash', json.dumps(get_info)) 
 
         return {"Product": json.loads(fnt_message)}
 
-#Take items from the internal stock and send to the shelf
+#Insert items that were previously on stock and send them to the shelf
 class insert_shelf(Resource):
     def post(self):
-        #array of products_id and qnt
+        #Array of products_id and qnt
         args = insert_shelf_args.parse_args()
 
         args = dict(args)
@@ -94,14 +109,21 @@ class insert_shelf(Resource):
         #Just change the number
         args['request_type'] = 200
 
-        publ.publish_message('stock.shelves', json.dumps(args))
+        #Sendind payload to rabbitMQ
+
+        #To stock.shelves queue - Recieves an ACK 
+        ack = publ.publish_message_response(routingKey='stock.shelves',
+                                        message=json.dumps(args))
+
+        #To logstash queue
+        publ.publish_message('logstash', json.dumps(args))
 
         return '', 204
 
 #Remove item from the shelf
 class remove_shelf(Resource):
     def delete(self):
-        #array of products_id and qnt
+        #Array of products_id and qnt
         args = remove_shelf_args.parse_args()
 
         args = dict(args)
@@ -109,49 +131,63 @@ class remove_shelf(Resource):
         #Just change the number
         args['request_type'] = 201
 
-        args = dict(args)
-        #Kira change the request_type, do a glossary ASAP. 
-        #Just change the number
-        args['request_type'] = 201
+        #Sendind payload to rabbitMQ
 
-        #sendind payload to rabbitMQ
-        publ.publish_message('shelves', json.dumps(args))
+        #To shelves queue - Recieves an ACK 
+        ack = publ.publish_message_response(routingKey='shelves',
+                                        message=json.dumps(args))
+
+        #To logstash queue
+        publ.publish_message('logstash', json.dumps(args))
 
         return '', 204
 
 #Get the items name
 class get_item_name(Resource):
     def post(self):
-        #getting the args
-        args = get_item_name_args.parse_args()
+        #Getting the args
+        get_info = get_item_name_args.parse_args()
 
-        args = dict(args)
+        get_info = dict(get_info)
         #Kira change the request_type, do a glossary ASAP. 
         #Just change the number
-        args['request_type'] = 202
+        get_info['request_type'] = 202
 
-        #sendind payload to rabbitMQ
+        #Sendind payload to rabbitMQ
+
+        #Expecting as a return a certain item from shelves
         item_name = publ.publish_message_response(routingKey='shelves',
-                                        queueName='shelves',
-                                        message=json.dumps(args))
+                                        message=json.dumps(get_info))
 
-        #return the item_name
+        #To logstash queue
+        #See with Daniel if is interesting ELK recieves the contents on stock
+        #Anylise if this message is useful at all
+        publ.publish_message('logstash', json.dumps(get_info))
+
+        #Return the item_name
         return item_name, 204
 
 
 #Get the items from shelf
 class get_shelf(Resource):
     def get(self):
-        #add request_type into args JSON
+        #Add request_type into args JSON
         get_info = {
             "request_type": 201
         }
         
-        publ.publish_message('stock.r', json.dumps(get_info))
+        #Sendind payload to rabbitMQ
 
-        #itensFromShelf = 
+        #Expecting as a return all items from shelves
+        itemsFromShelf = publ.publish_message_response(routingKey='shelves',
+                                        message=json.dumps(get_info))
 
-        return #itensFromShelf, 204
+        #To logstash queue
+        #See with Daniel if is interesting ELK recieves the contents on stock
+        #Anylise if this message is useful at all
+        publ.publish_message('logstash', json.dumps(get_info))
+
+        return itemsFromShelf, 204
 
 
 # --------- ROUTES ---------
@@ -161,7 +197,6 @@ api.add_resource(insert_shelf, "/insert_shelf")
 api.add_resource(remove_shelf, "/remove_shelf")
 api.add_resource(get_item_name, "/item_name")
 api.add_resource(get_shelf, "/shelf")
-
 # ------------------------
 
 

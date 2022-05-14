@@ -14,21 +14,24 @@ class RabbitSetup:
             'stock' : ['stock'],
             'stock.shelves' : ['stock.shelves'],
             'shelves': ['shelves'],
-            'logstash': ['shelves', 'stock.shelves', 'stock']
+            'logstash': ['logstash']
         }
         self._setup()
 
     def _create_connection(self):
         parameters=pika.ConnectionParameters(host=self.config['host'],
                                              port=self.config['port'],
+                                             virtual_host='/',
                                              heartbeat=0)
+                          
         return pika.BlockingConnection(parameters)
 
     def _setup(self):
     
         #Declaring an exchange routing agent
         self.channel.exchange_declare(exchange=self.config['exchange'],
-                                 exchange_type='direct')
+                                      exchange_type='direct',
+                                      durable=True)
 
         # This method creates or checks a queue. 
         # Good programming practise.
@@ -43,3 +46,5 @@ class RabbitSetup:
                 self.channel.queue_bind(exchange=self.config['exchange'],
                            queue=queue_name,
                            routing_key=routing_key)
+        
+        self.channel.basic_qos(prefetch_count=1)
