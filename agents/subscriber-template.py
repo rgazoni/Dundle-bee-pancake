@@ -23,6 +23,8 @@ class Agent(Subscriber.Subscriber):
         # The variable is self.response
         self.response = {'number example': 101,
                          'text': 'text example'}
+        # It's interesting to notice that the response is converted to string in order to send
+        # into the Rabbit pipeline 
         self.response = json.dumps(self.response)
 
         return super().on_request(ch, method, props, body)
