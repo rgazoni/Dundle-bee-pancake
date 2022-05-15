@@ -1,2 +1,3 @@
 mysqldb/dbdata/*
 rabbitmq/__pycache__
+docker-compose.yml
