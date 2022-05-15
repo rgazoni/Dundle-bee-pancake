@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import json
 from rabbitmq import Subscriber
+import mariadb
+import sys
+
 
 config = {
     'host': '172.40.1.13',
