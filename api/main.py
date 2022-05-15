@@ -36,7 +36,7 @@ insert_int_stk_args.add_argument("prod_qnt", type=int, help="Product quantity is
 insert_int_stk_args.add_argument("prod_fab_date", type=str, help="Product fab date is necessary", required=True)
 insert_int_stk_args.add_argument("prod_val_date", type=str, help="Product val date is necessary", required=True)
 insert_int_stk_args.add_argument("prod_batch", type=str, help="Product batch date is necessary", required=True)
-insert_int_stk_args.add_argument("prod_origin", type=str, help="Product batch date is necessary", required=True)
+insert_int_stk_args.add_argument("prod_origin", type=str, help="Product origin is necessary", required=True)
 
 insert_shelf_args = reqparse.RequestParser()
 insert_shelf_args.add_argument("prod_id", type=int, help="Product ID is necessary", required=True)
