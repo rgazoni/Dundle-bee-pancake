@@ -65,6 +65,8 @@ class insert_int_stk(Resource):
         #getting the args
         args = insert_int_stk_args.parse_args()
 
+        #"request_type": 101
+
         #sendind payload to rabbitMQ
         publ.publish_message('stock.r', json.dumps(args))
 
@@ -84,8 +86,10 @@ class get_int_stock(Resource):
     def get(self):
         #sendind a request to rabbitMQ
        
+       #"request_type": 102
+
         get_info = {
-            "request_type": 101
+            "request_type": 102
         }
 
         #sendind payload to rabbitMQ
@@ -104,6 +108,8 @@ class insert_shelf(Resource):
         #array of products_id and qnt
         args = insert_shelf_args.parse_args()
 
+        #"request_type": 201
+
         publ.publish_message('stock.shelves.r', json.dumps(args))
 
         return '', 204
@@ -113,6 +119,8 @@ class remove_shelf(Resource):
     def delete(self):
         #array of products_id and qnt
         args = remove_shelf_args.parse_args()
+
+        #"request_type": 203
 
         #sendind payload to rabbitMQ
         publ.publish_message('shelves.r', json.dumps(args))
@@ -127,6 +135,8 @@ class get_item_name(Resource):
 
         #add request_type into args JSON
 
+        #"request_type": 301
+
         #sendind payload to rabbitMQ to get the product name
         publ.publish_message('stock.r', json.dumps(args))
 
@@ -140,8 +150,11 @@ class get_item_name(Resource):
 class get_shelf(Resource):
     def get(self):
         #add request_type into args JSON
+
+        #"request_type": 202
+
         get_info = {
-            "request_type": 201
+            "request_type": 202
         }
         
         publ.publish_message('stock.r', json.dumps(get_info))
