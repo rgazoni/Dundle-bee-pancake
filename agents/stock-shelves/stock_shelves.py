@@ -54,6 +54,19 @@ def query_stock(connexion):
     connexion.close()
     return json_query
 
+def sell_from_shelves(connexion, id_prod, quant):
+    cursor = connexion.cursor()
+    args = [id_prod, quant, 0]
+    cursor.callproc('saida_caixa', args)
+    result = cursor.fetchall()
+    cursor.close()
+    cursor = connexion.cursor()
+    connexion.commit()
+    cursor.close()
+    connexion.close()
+    dict = {}
+    dict["result"] = result[0][0]
+    return json.dumps(dict, indent=2)
 
 def move_from_stock_to_shelves(connexion, ID_PROD, quant):
     cursor = connexion.cursor()
@@ -74,7 +87,7 @@ class Agent(Subscriber.Subscriber):
     def on_request(self, ch, method, props, body):
 
         json_object = json.loads(body)
-
+        print(body)
         if json_object['request_type'] == 201: 
             con = connect()
             result = move_from_stock_to_shelves(con, json_object['prod_id'],  json_object['prod_qnt'])
@@ -83,9 +96,14 @@ class Agent(Subscriber.Subscriber):
             con = connect()
             result = query_stock(con)
             self.response = result
+        elif json_object['request_type'] ==203: 
+            con = connect()
+            result = sell_from_shelves(con, json_object['prod_id'],  json_object['prod_qnt'])
+            self.response = result
         else:
-            self.response = json.dumps({'Error': "Invalid request"})
-
+            result = json.dumps({'Error': "Invalid request"})
+            self.response = result
+        print(result)
         return super().on_request(ch, method, props, body)
 
 
