@@ -70,8 +70,7 @@ def sell_from_shelves(connexion, id_prod, quant):
 class Agent(Subscriber.Subscriber):
 
     def on_request(self, ch, method, props, body):
-
-         json_object = json.loads(body)
+        json_object = json.loads(body)
 
         if json_object['request_type'] == 301: 
             con = connect()
@@ -83,7 +82,7 @@ class Agent(Subscriber.Subscriber):
             self.response = result
         else:
             self.response = json.dumps({'Error': "Invalid request"})
-
+        print(result)
         return super().on_request(ch, method, props, body)
 
 

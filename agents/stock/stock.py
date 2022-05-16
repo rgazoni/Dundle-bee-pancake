@@ -80,22 +80,12 @@ class Agent(Subscriber.Subscriber):
                             json_object['prod_qnt'],  json_object['prod_fab_date'], json_object['prod_val_date'],
                             json_object['prod_batch'], json_object['prod_origin'])
             self.response = result
-        elif json_object['request_type'] == 101: 
+        elif json_object['request_type'] == 102: 
             con = connect()
             result = query_stock(con)
             self.response = result
         else:
             self.response = json.dumps({'Error': "Invalid request"})
-
-        binding_key = method.routing_key
-        print("\n")
-        print("received new message for -" + binding_key)
-        print("\n")
-        print(" [x] Received %r" % body)
-        print("\n")
-        print(" [x] Received %r" % props)
-        print("\n")
-        print(" [x] Received %r" % ch)
 
         return super().on_request(ch, method, props, body)
 
