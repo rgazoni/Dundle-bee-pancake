@@ -25,6 +25,47 @@ def connect():
         print(f"Error connecting to MariaDB Platform: {e}")
         sys.exit(1)
 
+def query_stock(connexion):
+    names = ['ID_PROD', 'ID_CATEGORIA', 'Nome', 'produto.Quantidade', 'estoque.quantidade',
+             'lote', 'origem', 'Data_fabricacao', 'Data_vencimento']
+    cursor = connexion.cursor()
+    command = f'SELECT ID_PROD, ID_CATEGORIA, Nome, produto.Quantidade, estoque.quantidade, lote, origem, ' \
+              f'Data_fabricacao, Data_vencimento  FROM estoque INNER JOIN produto ' \
+              f'ON fk_Produto_ID_PROD = ID_PROD INNER JOIN categorias ' \
+              f'ON fk_Categorias_ID_CATEGORIA = ID_CATEGORIA;'
+    cursor.execute(command)
+    query_result = cursor.fetchall()  # Retorna a lista de produtos nas gondulas
+    list = []
+    for i in range(len(query_result)):
+        dict = {}
+        for j in range((len(query_result[i]))):
+            if isinstance(query_result[i][j], date):
+                date_time = query_result[i][j].strftime("%Y-%m-%d")
+                dict[names[j]] = date_time
+            else:
+                dict[names[j]] = query_result[i][j]
+        list.append(dict)
+
+    # convert into json
+    json_query = json.dumps(list, indent=2)
+    cursor.close()
+    connexion.close()
+    return json_query
+
+def sell_from_shelves(connexion, id_prod, quant):
+    cursor = connexion.cursor()
+    args = [id_prod, quant, 0]
+    cursor.callproc('saida_caixa', args)
+    result = cursor.fetchall()
+    cursor.close()
+    cursor = connexion.cursor()
+    connexion.commit()
+    cursor.close()
+    connexion.close()
+    dict = {}
+    dict["result"] = result[0][0]
+    return json.dumps(dict, indent=2)
+
 def query_item_name(connexion, id):
     names = ['prod_name']
     cursor = connexion.cursor()
@@ -61,6 +102,15 @@ class Agent(Subscriber.Subscriber):
             con = connect()
             result = query_item_name(con, json_object['prod_id'])
             self.response = result
+        elif json_object['request_type'] ==202: 
+            con = connect()
+            result = query_stock(con)
+            self.response = result
+        elif json_object['request_type'] ==203: 
+            for item in json_object['items']:
+                con = connect()
+                result = sell_from_shelves(con, item['prod_id'],  item['prod_qnt'])
+                self.response = result
         else:
             self.response = json.dumps({'Error': "Invalid request"})
         return super().on_request(ch, method, props, body)

@@ -8,4 +8,6 @@ RUN pip3 install -r requirements.txt
 
 WORKDIR /home
 
-ENTRYPOINT [ "bash" ]
+ENTRYPOINT [ "python3" ]
+
+CMD [ "stock.py" ]
