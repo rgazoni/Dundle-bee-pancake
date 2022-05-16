@@ -23,6 +23,14 @@ class Publisher(RabbitSetup.RabbitSetup):
     def __del__(self):
         self.connection.close()
 
+    def publish_message(self, routing_key, message):       
+        try:
+            #Publishes message to the exchange with the given routing key
+            self.channel.basic_publish(exchange=self.config['exchange'],
+            routing_key=routing_key, body=message)
+        except Exception as e:
+            print(e)
+
     def on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
             self.response = body
