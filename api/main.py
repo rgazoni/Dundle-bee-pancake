@@ -3,6 +3,7 @@ import resource
 from flask import Flask
 from flask_restful import Api, Resource, reqparse
 from rabbitmq import Publisher
+from flask_cors import CORS
 import json
 
 #Settings to make connection with RabbitMQ
@@ -13,6 +14,7 @@ config = {
 }
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app)
 publ = Publisher.Publisher(config)
 
