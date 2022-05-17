@@ -26,11 +26,11 @@ def connect():
         sys.exit(1)
 
 def query_stock(connexion):
-    names = ['ID_PROD', 'ID_CATEGORIA', 'Nome', 'produto.Quantidade', 'estoque.quantidade',
-             'lote', 'origem', 'Data_fabricacao', 'Data_vencimento']
+    names = ['prod_id', 'prod_cat_id', 'prod_name', 'prod_qnt', 'shelve_qnt',
+            'prod_batch', 'prod_origin', 'prod_fab_date', 'prod_val_date']
     cursor = connexion.cursor()
-    command = f'SELECT ID_PROD, ID_CATEGORIA, Nome, produto.Quantidade, estoque.quantidade, lote, origem, ' \
-              f'Data_fabricacao, Data_vencimento  FROM estoque INNER JOIN produto ' \
+    command = f'SELECT ID_PROD, ID_CATEGORIA, Nome, produto.Quantidade, gondula.quantidade, lote, origem, ' \
+              f'Data_fabricacao, Data_vencimento  FROM gondula INNER JOIN produto ' \
               f'ON fk_Produto_ID_PROD = ID_PROD INNER JOIN categorias ' \
               f'ON fk_Categorias_ID_CATEGORIA = ID_CATEGORIA;'
     cursor.execute(command)
