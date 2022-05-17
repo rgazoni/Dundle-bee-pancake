@@ -3,6 +3,7 @@ import resource
 from flask import Flask
 from flask_restful import Api, Resource, reqparse
 from rabbitmq import Publisher
+from flask_cors import CORS
 import json
 
 #Settings to make connection with RabbitMQ
@@ -13,6 +14,7 @@ config = {
 }
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app)
 publ = Publisher.Publisher(config)
 
@@ -71,7 +73,8 @@ class insert_int_stk(Resource):
         ack = ''
         #To logstash queue
         # publ.publish_message('logstash', json.dumps(args))
-        
+
+        args.headers.add('Access-Control-Allow-Origin', '*')
         return {"response": args}
 
 #Get all the items from the internal stock
