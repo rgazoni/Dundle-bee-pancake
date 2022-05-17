@@ -25,7 +25,7 @@ def connect():
         print(f"Error connecting to MariaDB Platform: {e}")
         sys.exit(1)
 
-def query_stock(connexion):
+def query_shelve(connexion):
     names = ['prod_id', 'prod_cat_id', 'prod_name', 'prod_qnt', 'shelve_qnt',
             'prod_batch', 'prod_origin', 'prod_fab_date', 'prod_val_date']
     cursor = connexion.cursor()
@@ -104,7 +104,7 @@ class Agent(Subscriber.Subscriber):
             self.response = result
         elif json_object['request_type'] ==202: 
             con = connect()
-            result = query_stock(con)
+            result = query_shelve(con)
             self.response = result
         elif json_object['request_type'] ==203: 
             for item in json_object['items']:
