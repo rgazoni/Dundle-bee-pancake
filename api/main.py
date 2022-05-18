@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import resource
-from flask import Flask
+from flask import Flask, Response
 from flask_restful import Api, Resource, reqparse
 from rabbitmq import Publisher
 from flask_cors import CORS
@@ -39,13 +39,9 @@ insert_int_stk_args.add_argument("prod_origin", type=str, help="Product origin i
 
 insert_shelf_args = reqparse.RequestParser()
 insert_shelf_args.add_argument("items", type=dict, action="append")
-# insert_shelf_args.add_argument("prod_id", type=int, help="Product ID is necessary", required=True)
-# insert_shelf_args.add_argument("prod_qnt", type=int, help="Product quantity is necessary", required=True)
 
 remove_shelf_args = reqparse.RequestParser()
 remove_shelf_args.add_argument("items", type=dict, action="append")
-# remove_shelf_args.add_argument("prod_id", type=int, help="Product ID is necessary", required=True)
-# remove_shelf_args.add_argument("prod_qnt", type=int, help="Product quantity is necessary", required=True)
 
 get_item_name_args = reqparse.RequestParser()
 get_item_name_args.add_argument("prod_id", type=int, help="Product ID is necessary", required=True)
@@ -70,9 +66,9 @@ class insert_int_stk(Resource):
 
         args = dict(args)
         args['ack'] = str(ack)
-        ack = ''
+
         #To logstash queue
-        # publ.publish_message('logstash', json.dumps(args))
+        publ.publish_message('logstash', json.dumps(args))
         
         return {"response": args}
 
@@ -86,15 +82,12 @@ class get_int_stock(Resource):
         }
 
         #Sendind payload to rabbitMQ
-
         #Expecting as a return all items on stock
         fnt_message = publ.publish_message_response(routingKey='stock',
                                         message=json.dumps(get_info))
 
         #To logstash queue
-        #See with Daniel if is interesting ELK recieves the contents on stock
-        #Anylise if this message is useful at all
-        # publ.publish_message('logstash', json.dumps(get_info)) 
+        publ.publish_message('logstash', json.dumps(get_info)) 
 
         return {"Products": json.loads(fnt_message)}
 
@@ -112,19 +105,20 @@ class insert_shelf(Resource):
         args['request_type'] = 201
 
         #Sendind payload to rabbitMQ
-        #To stock.shelves queue - Recieves an ACK 
         ack = publ.publish_message_response(routingKey='stock.shelves',
                                         message=json.dumps(args))
 
         #To logstash queue
-        # publ.publish_message('logstash', json.dumps(args))
+        publ.publish_message('logstash', json.dumps(args))
 
-        return {"Response": args}
-        # return 'OK', 200
+        resp = Response(args)
+        resp.headers['Access-Control-Allow-Origin']='*'
+
+        return resp
 
 #Remove item from the shelf
 class remove_shelf(Resource):
-    def delete(self):
+    def post(self):
         #Array of products_id and qnt
         args = remove_shelf_args.parse_args()
 
@@ -142,10 +136,12 @@ class remove_shelf(Resource):
                                         message=json.dumps(args))
 
         #To logstash queue
-        # publ.publish_message('logstash', json.dumps(args))
+        publ.publish_message('logstash', json.dumps(args))
 
-        # return {"Response": args}
-        return 'OK', 200
+        resp = Response(args)
+        resp.headers['Access-Control-Allow-Origin']='*'
+
+        return resp
 
 #Get the item name
 class get_item_name(Resource):
@@ -164,9 +160,7 @@ class get_item_name(Resource):
                                         message=json.dumps(get_info))
 
         #To logstash queue
-        #See with Daniel if is interesting ELK recieves the contents on stock
-        #Anylise if this message is useful at all
-        # publ.publish_message('logstash', json.dumps(get_info))
+        publ.publish_message('logstash', json.dumps(get_info))
 
         #Return the item_name
         return json.loads(item_name), 200
@@ -181,15 +175,12 @@ class get_shelf(Resource):
         }
         
         #Sendind payload to rabbitMQ
-
         #Expecting as a return all items from shelves
         itemsFromShelf = publ.publish_message_response(routingKey='shelves',
                                         message=json.dumps(get_info))
 
         #To logstash queue
-        #See with Daniel if is interesting ELK recieves the contents on stock
-        #Anylise if this message is useful at all
-        # publ.publish_message('logstash', json.dumps(get_info))
+        publ.publish_message('logstash', json.dumps(get_info))
 
         return {"Products": json.loads(itemsFromShelf)}
 
